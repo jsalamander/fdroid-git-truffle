@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+# fdroiddata
+fdroiddata
+
+# scan results
+trufflehog_results.json
 # Distribution / packaging
 .Python
 build/
