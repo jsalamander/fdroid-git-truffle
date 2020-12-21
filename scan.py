@@ -21,7 +21,7 @@ def run_trufflehog(filepath):
 
                 json_results = ""
                 try:
-                    process = subprocess.run('/home/pea/.local/bin/trufflehog --json --cleanup ' + repo_link, shell=True)
+                    process = subprocess.run('trufflehog --json --cleanup ' + repo_link, shell=True)
                     json_results = process.stdout
                 except ValueError as err:
                     print("Error on " + repo_link + str(err))
