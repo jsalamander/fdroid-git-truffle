@@ -21,12 +21,12 @@ def run_trufflehog(filepath):
 
                 json_results = ""
                 try:
-                    process = subprocess.run('trufflehog --json --cleanup ' + repo_link, shell=True)
+                    process = subprocess.run('trufflehog --json ' + repo_link, shell=True, capture_output=True)
                     json_results = process.stdout
                 except ValueError as err:
                     print("Error on " + repo_link + str(err))
 
-                if not json_results:
+                if json_results:
                     es.index(index='fdroid-secrets', doc_type='secrets', body=json_results)
 
 
