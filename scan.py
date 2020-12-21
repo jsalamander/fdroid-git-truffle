@@ -4,9 +4,9 @@ from pathlib import Path
 from elasticsearch import Elasticsearch
 import yaml
 from tqdm import tqdm
+from truffleHog import truffleHog as th
 
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
 
 def run_trufflehog(filepath):
     with open(filepath) as file:
@@ -19,10 +19,9 @@ def run_trufflehog(filepath):
                         repo_link = repo_link[:-1]
                     repo_link = repo_link + ".git"
 
-                json_results = ""
+                json_results = {}
                 try:
-                    process = subprocess.run('trufflehog --json ' + repo_link, shell=True, capture_output=True)
-                    json_results = process.stdout
+                    json_results = th.find_strings(repo_link, printJson=True)
                 except ValueError as err:
                     print("Error on " + repo_link + str(err))
 
