@@ -120,8 +120,6 @@ def run_trufflehog(filepath):
                 json_results = {}
                 try:
                     json_results = find_strings(repo_link)
-                    print(json_results)
-                    exit(0)
                 except ValueError as err:
                     print("Error on " + repo_link + str(err))
 
