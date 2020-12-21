@@ -1,7 +1,7 @@
+import subprocess
 from multiprocessing import Pool
 from pathlib import Path
 from elasticsearch import Elasticsearch
-import os
 import yaml
 from tqdm import tqdm
 
@@ -22,10 +22,12 @@ def run_trufflehog(filepath):
 
                 json_results = ""
                 try:
-                    stream = os.popen("trufflehog --json " + repo_link)
-                    json_results = stream.read()
-                except Exception:
-                    print("Error on " + repo_link)
+                    process = subprocess.run('trufflehog --json ' + repo_link, shell=True, check=True, stdout=subprocess.PIPE,
+                                             universal_newlines=True)
+                    json_results = process.stdout
+                    print(json_results)
+                except ValueError as err:
+                    print("Error on " + repo_link + str(err))
 
                 if not json_results:
                     es.index(index='fdroid-secrets', doc_type='secrets', body=json_results)
