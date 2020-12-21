@@ -1,4 +1,3 @@
-from subprocess import check_output, STDOUT
 from multiprocessing import Pool
 from pathlib import Path
 from elasticsearch import Elasticsearch
