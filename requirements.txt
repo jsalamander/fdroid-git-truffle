@@ -1,2 +1,6 @@
+certifi==2020.12.5
+elasticsearch==7.10.1
+pkg-resources==0.0.0
 PyYAML==5.3.1
 tqdm==4.54.1
+urllib3==1.26.2

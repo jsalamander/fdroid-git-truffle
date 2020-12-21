@@ -1,11 +1,13 @@
-import subprocess
+from subprocess import check_output, STDOUT
 from multiprocessing import Pool
 from pathlib import Path
-
+from elasticsearch import Elasticsearch
+import os
 import yaml
 from tqdm import tqdm
 
-log = open('trufflehog_results.json', 'a')
+
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 
 def run_trufflehog(filepath):
@@ -18,7 +20,16 @@ def run_trufflehog(filepath):
                     if repo_link.endswith("/"):
                         repo_link = repo_link[:-1]
                     repo_link = repo_link + ".git"
-                subprocess.call(['trufflehog --json ' + repo_link], shell=True, stdout=log)
+
+                json_results = ""
+                try:
+                    stream = os.popen("trufflehog --json " + repo_link)
+                    json_results = stream.read()
+                except Exception:
+                    print("Error on " + repo_link)
+
+                if not json_results:
+                    es.index(index='fdroid-secrets', doc_type='secrets', body=json_results)
 
 
 pathlist = Path("./fdroiddata/metadata").rglob('*.yml')
@@ -28,7 +39,7 @@ for path in pathlist:
     path_in_str = str(path)
     arguments.append(path_in_str)
 
-with Pool(50) as p:
+with Pool(16) as p:
     with tqdm(total=len(arguments)) as pbar:
         for i, _ in enumerate(p.imap_unordered(run_trufflehog, arguments)):
             pbar.update()
