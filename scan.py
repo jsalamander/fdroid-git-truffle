@@ -5,7 +5,6 @@ from elasticsearch import Elasticsearch
 import yaml
 from tqdm import tqdm
 
-
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 
@@ -22,8 +21,7 @@ def run_trufflehog(filepath):
 
                 json_results = ""
                 try:
-                    process = subprocess.run('trufflehog --json --cleanup ' + repo_link, shell=True, check=True, stdout=subprocess.PIPE,
-                                             universal_newlines=True)
+                    process = subprocess.run('/home/pea/.local/bin/trufflehog --json --cleanup ' + repo_link, shell=True)
                     json_results = process.stdout
                 except ValueError as err:
                     print("Error on " + repo_link + str(err))
