@@ -1,5 +1,7 @@
 import datetime
 import hashlib
+import os
+import shutil
 import tempfile
 from multiprocessing import Pool
 from pathlib import Path
@@ -13,15 +15,10 @@ from truffleHog.truffleHog import clone_git_repo, handle_results, path_included,
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 
-def print_results(issue):
-    commit_time = issue['date']
-    branch_name = issue['branch']
-    prev_commit = issue['commit']
-    printableDiff = issue['printDiff']
-    commitHash = issue['commitHash']
-    reason = issue['reason']
-    path = issue['path']
-    return issue
+def clean_up(output):
+    issues_path = output.get("issues_path", None)
+    if issues_path and os.path.isdir(issues_path):
+        shutil.rmtree(output["issues_path"])
 
 
 def diff_worker(diff, curr_commit, prev_commit, branch_name, commitHash, custom_regexes, do_regex,
@@ -103,6 +100,7 @@ def find_strings(git_url, since_commit=None, max_depth=1000000, printJson=False,
     output["clone_uri"] = git_url
     output["issues_path"] = output_dir
     output["findings"] = printable
+    clean_up(output)
     return output
 
 
@@ -120,11 +118,14 @@ def run_trufflehog(filepath):
                 json_results = {}
                 try:
                     json_results = find_strings(repo_link)
-                except ValueError as err:
-                    print("Error on " + repo_link + str(err))
+                except:
+                    print("Error on " + repo_link)
 
                 if json_results:
-                    es.index(index='fdroid-secrets', doc_type='secrets', body=json_results)
+                    try:
+                        es.index(index='fdroid-secrets', doc_type='secrets', body=json_results)
+                    except:
+                        print("unable to store in the es server")
 
 
 pathlist = Path("./fdroiddata/metadata").rglob('*.yml')
@@ -134,7 +135,7 @@ for path in pathlist:
     path_in_str = str(path)
     arguments.append(path_in_str)
 
-with Pool(16) as p:
+with Pool(4) as p:
     with tqdm(total=len(arguments)) as pbar:
         for i, _ in enumerate(p.imap_unordered(run_trufflehog, arguments)):
             pbar.update()
