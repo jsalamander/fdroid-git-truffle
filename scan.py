@@ -100,6 +100,7 @@ def find_strings(git_url, since_commit=None, max_depth=1000000, printJson=False,
     output["clone_uri"] = git_url
     output["issues_path"] = output_dir
     output["findings"] = printable
+    output["createdAt"] = datetime.time().isoformat()
     clean_up(output)
     return output
 
