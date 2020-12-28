@@ -136,7 +136,7 @@ for path in pathlist:
     path_in_str = str(path)
     arguments.append(path_in_str)
 
-with Pool(4) as p:
+with Pool(processes=4, maxtasksperchild=1) as p:
     with tqdm(total=len(arguments)) as pbar:
         for i, _ in enumerate(p.imap_unordered(run_trufflehog, arguments)):
             pbar.update()
